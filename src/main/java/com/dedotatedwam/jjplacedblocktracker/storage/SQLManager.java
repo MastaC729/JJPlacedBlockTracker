@@ -65,7 +65,7 @@ public class SQLManager {
 				System.out.println(test_column1_value + "\t" + test_column2_value + "\t" + test_column3_value);
 			}
 		} catch (Exception e) {
-			logger.error(e.getCause().getMessage());
+			logger.error(e.getMessage());
 		} finally {
 			if (stmt != null) { stmt.close(); }
 			conn.close();
