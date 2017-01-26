@@ -17,7 +17,6 @@ import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.service.permission.PermissionDescription;
 import org.spongepowered.api.service.permission.PermissionService;
 
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -27,17 +26,10 @@ public class JJPlacedBlockTracker {
 
 	@Inject
 	private Logger logger;
-	private static File parentDirectory;
 	public static JJConfig config;
-	@Inject @DefaultConfig(sharedRoot = false) private File defaultConfig;
 	@Inject @ConfigDir(sharedRoot = false) private Path configDir;
 	@Inject @DefaultConfig(sharedRoot = true) private ConfigurationLoader<CommentedConfigurationNode> configLoader;
 	@Inject private Game game;
-
-	@Inject
-	JJPlacedBlockTracker (Logger logger) {
-		this.logger = logger;
-	}
 
 	@Listener
 	public void preInit(GamePreInitializationEvent event) throws SQLException {
@@ -45,13 +37,10 @@ public class JJPlacedBlockTracker {
 			Files.createDirectories(configDir);
 			config = JJConfig.fromLoader(configLoader);
 		} catch (Exception e) {
-			logger.warn("Error loading default configuration!");
+			logger.warn("Error loading default configuration!", e);
 		}
 
-		parentDirectory = defaultConfig.getParentFile();
-
-		SQLManager sqlManager = new SQLManager(logger);
-		sqlManager.init();
+		SQLManager.init();
 
 		JJPermissions jjPerms = new JJPermissions();
 
@@ -100,7 +89,7 @@ public class JJPlacedBlockTracker {
 		return config;
 	}
 
-	public static File getParentDirectory () {
-		return parentDirectory;
+	public Path getConfigDir() {
+		return configDir;
 	}
 }

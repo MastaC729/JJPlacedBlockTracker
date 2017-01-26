@@ -16,10 +16,10 @@ public class SQLManager {
 	@Inject
 	private Logger logger;
 
-	private static SqlService sql;
-	private static DataSource dataSource;
+	private SqlService sql;
+	private DataSource dataSource;
 
-	private static javax.sql.DataSource getDataSource(String jdbcUrl) throws SQLException {
+	private javax.sql.DataSource getDataSource(String jdbcUrl) throws SQLException {
 		if (sql == null) {
 			sql = Sponge.getServiceManager().provide(SqlService.class).get();
 		}
@@ -29,7 +29,7 @@ public class SQLManager {
 	// Initializes the following databases:
 	// players: converts the player's UUID to a more lightweight int
 	// locations: stores each block placed within the whitelist
-	public static void init() throws SQLException {
+	public void init() throws SQLException {
 		Connection conn = dataSource.getConnection();
 		Statement stmt = conn.createStatement();
 
@@ -138,7 +138,7 @@ public class SQLManager {
 	public SQLManager(Logger logger) {
 		this.logger = logger;
 		try {
-			dataSource = getDataSource("jdbc:h2:" + JJPlacedBlockTracker.getParentDirectory().getAbsolutePath()
+			dataSource = getDataSource("jdbc:h2:" + JJPlacedBlockTracker.getConfigDir().toAbsolutePath()
 					+ "/" + "jjdatabase");        //TODO Make this database name configurable
 		} catch (SQLException e) {
 			logger.error("Error while getting the data source! ", e);
