@@ -1,21 +1,20 @@
 package com.dedotatedwam.jjplacedblocktracker.storage;
 
 
-import com.dedotatedwam.jjplacedblocktracker.JJPlacedBlockTracker;
-import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.service.sql.SqlService;
 
 import javax.sql.DataSource;
+import java.nio.file.Path;
 import java.sql.*;
 import java.util.UUID;
 
 public class SQLManager {
 
-	@Inject
 	private Logger logger;
 
+	private Path configDir;
 	private SqlService sql;
 	private DataSource dataSource;
 
@@ -24,36 +23,6 @@ public class SQLManager {
 			sql = Sponge.getServiceManager().provide(SqlService.class).get();
 		}
 		return sql.getDataSource(jdbcUrl);
-	}
-
-	// Initializes the following databases:
-	// players: converts the player's UUID to a more lightweight int
-	// locations: stores each block placed within the whitelist
-	public void init() throws SQLException {
-		Connection conn = dataSource.getConnection();
-		Statement stmt = conn.createStatement();
-
-		try {
-			// Table for UUID --> player id conversion for Sanic speed
-			stmt.executeUpdate("CREATE table IF NOT EXISTS players ( "
-					+ "id INT AUTO_INCREMENT, "		// AUTO_INCREMENT is pretty neat
-					+ "uuid VARCHAR(36) );");
-			// Table for total amount of placed blocks per player
-			// player_id: obtained from players table
-			// block_name: obtained from config
-			// world, x, y, and z: obtained from getBlockState
-			stmt.executeUpdate("CREATE TABLE IF NOT EXISTS locations ( "
-					+ "player_id INT, "
-					+ "block_name VARCHAR(36), "
-					+ "world VARCHAR(36), "
-					+ "x INT, "
-					+ "y INT, "
-					+ "z INT );");
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			conn.close();
-		}
 	}
 
 	// Gets the player id from the players database based on their UUID
@@ -135,13 +104,42 @@ public class SQLManager {
 		return 0;
 	}
 
-	public SQLManager(Logger logger) {
+	// Initializes the following databases:
+	// players: converts the player's UUID to a more lightweight int
+	// locations: stores each block placed within the whitelist
+	// NOTE: This should only need to be called once in the main class, then that instance should be used by everything else
+	public SQLManager(Logger logger, Path configDir) {
 		this.logger = logger;
+		this.configDir = configDir;
 		try {
-			dataSource = getDataSource("jdbc:h2:" + JJPlacedBlockTracker.getConfigDir().toAbsolutePath()
+			dataSource = getDataSource("jdbc:h2:" + configDir.toAbsolutePath()
 					+ "/" + "jjdatabase");        //TODO Make this database name configurable
 		} catch (SQLException e) {
 			logger.error("Error while getting the data source! ", e);
+		}
+
+		try (Connection conn = dataSource.getConnection()) {
+			// Table for UUID --> player id conversion for Sanic speed
+			PreparedStatement stmt = conn.prepareStatement("CREATE table IF NOT EXISTS players ( "
+					+ "id INT AUTO_INCREMENT, "		// AUTO_INCREMENT is pretty neat
+					+ "uuid VARCHAR(36) );");
+			stmt.executeUpdate();
+
+			// Table for total amount of placed blocks per player
+			// player_id: obtained from players table
+			// block_name: obtained from config
+			// world, x, y, and z: obtained from getBlockState
+			stmt = conn.prepareStatement("CREATE TABLE IF NOT EXISTS locations ( "
+					+ "player_id INT, "
+					+ "block_name VARCHAR(36), "
+					+ "world VARCHAR(36), "
+					+ "x INT, "
+					+ "y INT, "
+					+ "z INT );");
+			stmt.executeUpdate();
+
+		} catch (Exception e) {
+			logger.error("Error while creating new database or reading from existing one! ", e);
 		}
 	}
 }

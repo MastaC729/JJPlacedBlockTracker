@@ -16,7 +16,7 @@ public class JJPermissions {
 	@Inject
 	Game game;
 
-	public void registerPD(String role, String permission, String description, PermissionService service) {
+	public static void registerPD(String role, String permission, String description, PermissionService service) {
 
 		Optional<Builder> optBuilder = service.newDescriptionBuilder(JJPlacedBlockTracker.class);
 		if (optBuilder.isPresent()) {
@@ -28,7 +28,7 @@ public class JJPermissions {
 		}
 	}
 
-	public int getPlacedBlocksPermissions (Player subject, String block_name) {
+	public static int getPlacedBlocksPermissions (Player subject, String block_name) {
 		if (subject.hasPermission("jjplacedblocktracker.whitelist.unlimited")) {
 			return Integer.MAX_VALUE;
 		}

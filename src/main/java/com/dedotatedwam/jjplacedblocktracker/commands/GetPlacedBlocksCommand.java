@@ -4,7 +4,6 @@ package com.dedotatedwam.jjplacedblocktracker.commands;
 import com.dedotatedwam.jjplacedblocktracker.JJPlacedBlockTracker;
 import com.dedotatedwam.jjplacedblocktracker.permissions.JJPermissions;
 import com.dedotatedwam.jjplacedblocktracker.storage.SQLManager;
-import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
@@ -25,8 +24,13 @@ import java.util.Optional;
 
 public class GetPlacedBlocksCommand implements CommandExecutor {
 
-	@Inject
 	private Logger logger;
+	private SQLManager sqlManager;
+
+	public GetPlacedBlocksCommand(Logger logger, SQLManager sqlManager) {
+		this.logger = logger;
+		this.sqlManager = sqlManager;
+	}
 
 	@Override
 	public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
@@ -94,8 +98,7 @@ public class GetPlacedBlocksCommand implements CommandExecutor {
 			}
 
 			// Assuming they gave both a player and a block_name
-			SQLManager sql = new SQLManager(logger);
-			int amt = sql.getAmount(block_name, targetPlayer.getUniqueId());
+			int amt = sqlManager.getAmount(block_name, targetPlayer.getUniqueId());
 			src.sendMessage(Text.of(TextColors.YELLOW, "Player " + targetPlayer.get(Keys.DISPLAY_NAME).get().toPlain() +
 					" has placed the following amount of block type " + block_name + ": " + amt + "/"
 					+ jjPerms.getPlacedBlocksPermissions(targetPlayer, block_name) + " blocks"));
@@ -106,8 +109,7 @@ public class GetPlacedBlocksCommand implements CommandExecutor {
 			// If they didn't specify a name - check perms and look up their amount
 			if (targetPlayer == null) {
 				if (src.hasPermission("jjplacedblocktracker.commands.getplacedblocks.self")) {
-					SQLManager sql = new SQLManager(logger);
-					int amt = sql.getAmount(block_name, ((Player) src).getUniqueId());
+					int amt = sqlManager.getAmount(block_name, ((Player) src).getUniqueId());
 					src.sendMessage(Text.of(TextColors.YELLOW, "You have placed the following amount of block type " + block_name + ": " + amt + "/"
 							+ jjPerms.getPlacedBlocksPermissions(((Player) src).getPlayer().get(), block_name) + " blocks"));
 					return CommandResult.success();
@@ -119,8 +121,7 @@ public class GetPlacedBlocksCommand implements CommandExecutor {
 			// If they're looking up someone else
 			else {
 				if (src.hasPermission("jjplacedblocktracker.commands.getplacedblocks.other")) {
-					SQLManager sql = new SQLManager(logger);
-					int amt = sql.getAmount(block_name, targetPlayer.getUniqueId());
+					int amt = sqlManager.getAmount(block_name, targetPlayer.getUniqueId());
 					src.sendMessage(Text.of(TextColors.YELLOW, "Player " + targetPlayer.get(Keys.DISPLAY_NAME).get().toPlain() +
 							" has have placed the following amount of block type " + block_name + ": " + amt + "/"
 							+ jjPerms.getPlacedBlocksPermissions(targetPlayer, block_name) + " blocks"));

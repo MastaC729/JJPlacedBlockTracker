@@ -27,6 +27,7 @@ public class JJPlacedBlockTracker {
 	@Inject
 	private Logger logger;
 	public static JJConfig config;
+	public SQLManager sqlManager;
 	@Inject @ConfigDir(sharedRoot = false) private Path configDir;
 	@Inject @DefaultConfig(sharedRoot = true) private ConfigurationLoader<CommentedConfigurationNode> configLoader;
 	@Inject private Game game;
@@ -40,7 +41,7 @@ public class JJPlacedBlockTracker {
 			logger.warn("Error loading default configuration!", e);
 		}
 
-		SQLManager.init();
+		sqlManager = new SQLManager(logger, configDir);
 
 		JJPermissions jjPerms = new JJPermissions();
 
@@ -75,7 +76,7 @@ public class JJPlacedBlockTracker {
 
 	@Listener
 	public void onServerStart(GameStartedServerEvent event){
-		CommandBuilder cBuilder = new CommandBuilder(this, logger);
+		CommandBuilder cBuilder = new CommandBuilder(this, logger, sqlManager);
 		cBuilder.buildCommands();
 		logger.info("JJPlacedBlockTracer has finished loading and has started.");
 	}

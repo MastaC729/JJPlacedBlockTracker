@@ -2,6 +2,7 @@ package com.dedotatedwam.jjplacedblocktracker.commands;
 
 
 import com.dedotatedwam.jjplacedblocktracker.JJPlacedBlockTracker;
+import com.dedotatedwam.jjplacedblocktracker.storage.SQLManager;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.args.GenericArguments;
@@ -10,12 +11,14 @@ import org.spongepowered.api.text.Text;
 
 public class CommandBuilder {
 
-	private final JJPlacedBlockTracker plugin;
+	private JJPlacedBlockTracker plugin;
+	private SQLManager sqlManager;
 	private Logger logger;
 
-	public CommandBuilder(JJPlacedBlockTracker plugin, Logger logger) {
+	public CommandBuilder(JJPlacedBlockTracker plugin, Logger logger, SQLManager sqlManager) {
 		this.plugin = plugin;
 		this.logger = logger;
+		this.sqlManager = sqlManager;
 	}
 
 	public void buildCommands () {
@@ -27,7 +30,7 @@ public class CommandBuilder {
 						GenericArguments.string(Text.of("player")),
 						GenericArguments.string(Text.of("block_name"))),
 						GenericArguments.optional(GenericArguments.onlyOne(GenericArguments.string(Text.of("block_name")))))
-				.executor(new GetPlacedBlocksCommand())
+				.executor(new GetPlacedBlocksCommand(logger, sqlManager))
 				.build(), "getplacedblocks", "getpb");
 
 		// Command /getallplacedblocks [player]
@@ -35,7 +38,7 @@ public class CommandBuilder {
 				.description(Text.of("Reports the number of all blocks you placed that are on the whitelist."))
 				.permission("jjplacedblocktracker.commands.getallplacedblocks")
 				.arguments(GenericArguments.optional(GenericArguments.onlyOne(GenericArguments.string(Text.of("player")))))
-				.executor(new GetAllPlacedBlocksCommand())
+				.executor(new GetAllPlacedBlocksCommand(logger, sqlManager))
 				.build(), "getallplacedblocks", "getapb");
 	}
 }

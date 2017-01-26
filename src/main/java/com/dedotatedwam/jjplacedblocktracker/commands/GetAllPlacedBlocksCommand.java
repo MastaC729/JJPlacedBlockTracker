@@ -4,7 +4,6 @@ import com.dedotatedwam.jjplacedblocktracker.JJPlacedBlockTracker;
 import com.dedotatedwam.jjplacedblocktracker.config.BlockEntry;
 import com.dedotatedwam.jjplacedblocktracker.permissions.JJPermissions;
 import com.dedotatedwam.jjplacedblocktracker.storage.SQLManager;
-import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
@@ -25,13 +24,18 @@ import java.util.*;
 
 public class GetAllPlacedBlocksCommand implements CommandExecutor {
 
-	@Inject
 	private Logger logger;
+	private SQLManager sqlManager;
+
+	public GetAllPlacedBlocksCommand(Logger logger, SQLManager sqlManager) {
+		this.logger = logger;
+		this.sqlManager = sqlManager;
+	}
 
 	@Override
 	public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
 
-		Player targetPlayer = null;;
+		Player targetPlayer = null;
 
 		// Check to see if a player was given and if the player is a valid username
 		if (args.<String>getOne("player").isPresent()) {
@@ -59,14 +63,13 @@ public class GetAllPlacedBlocksCommand implements CommandExecutor {
 				src.sendMessage(Text.of(TextColors.RED, "Usage: /getallplacedblock [player]"));
 				return CommandResult.empty();
 			} else {
-				SQLManager sql = new SQLManager(logger);
 				Map<String, Integer> amts = new HashMap<>();
 
 				List<BlockEntry> blockEntries = JJPlacedBlockTracker.config.getBlockWhitelist();
 
 				for (BlockEntry blockEntry : blockEntries) {
 					String block_name = blockEntry.getName();
-					int amt = sql.getAmount(block_name, targetPlayer.getUniqueId());
+					int amt = sqlManager.getAmount(block_name, targetPlayer.getUniqueId());
 					amts.put(block_name, amt);
 				}
 
@@ -82,7 +85,7 @@ public class GetAllPlacedBlocksCommand implements CommandExecutor {
 				messages.add(Text.of(TextColors.YELLOW, "Placement stats for " + targetPlayer.get(Keys.DISPLAY_NAME).get().toPlain() + ":"));
 				for (Map.Entry<String, Integer> entry : amts.entrySet()) {
 					messages.add(Text.of(TextColors.YELLOW, entry.getKey() + ": " + entry.getValue()
-							+ "/" + jjPerms.getPlacedBlocksPermissions(targetPlayer, entry.getKey()) + " blocks"));
+							+ "/" + JJPermissions.getPlacedBlocksPermissions(targetPlayer, entry.getKey()) + " blocks"));
 				}
 				messages.add(Text.of(TextColors.YELLOW, "===================================================="));
 
@@ -95,7 +98,6 @@ public class GetAllPlacedBlocksCommand implements CommandExecutor {
 			// If they didn't specify a name - check perms and look up their amount
 			if (targetPlayer == null) {
 				if (src.hasPermission("jjplacedblocktracker.commands.getallplacedblocks.self")) {
-					SQLManager sql = new SQLManager(logger);
 
 					Map <String, Integer> amts = new HashMap<>();
 
@@ -103,7 +105,7 @@ public class GetAllPlacedBlocksCommand implements CommandExecutor {
 
 					for (BlockEntry blockEntry : blockEntries) {
 						String block_name = blockEntry.getName();
-						int amt = sql.getAmount(block_name, ((Player) src).getUniqueId());
+						int amt = sqlManager.getAmount(block_name, ((Player) src).getUniqueId());
 						amts.put(block_name, amt);
 					}
 
@@ -119,7 +121,7 @@ public class GetAllPlacedBlocksCommand implements CommandExecutor {
 					messages.add(Text.of(TextColors.YELLOW, "Placement stats: "));
 					for (Map.Entry<String, Integer> entry : amts.entrySet()) {
 						messages.add(Text.of(TextColors.YELLOW, entry.getKey() + ": " + entry.getValue()
-								+ "/" + jjPerms.getPlacedBlocksPermissions((Player) src, entry.getKey()) + " blocks"));
+								+ "/" + JJPermissions.getPlacedBlocksPermissions((Player) src, entry.getKey()) + " blocks"));
 					}
 					messages.add(Text.of(TextColors.YELLOW, "===================================================="));
 
@@ -134,14 +136,13 @@ public class GetAllPlacedBlocksCommand implements CommandExecutor {
 			// If they're looking up someone else
 			else {
 				if (src.hasPermission("jjplacedblocktracker.commands.getplacedblocks.other")) {
-					SQLManager sql = new SQLManager(logger);
 					Map<String, Integer> amts = new HashMap<>();
 
 					List<BlockEntry> blockEntries = JJPlacedBlockTracker.config.getBlockWhitelist();
 
 					for (BlockEntry blockEntry : blockEntries) {
 						String block_name = blockEntry.getName();
-						int amt = sql.getAmount(block_name, targetPlayer.getUniqueId());
+						int amt = sqlManager.getAmount(block_name, targetPlayer.getUniqueId());
 						amts.put(block_name, amt);
 					}
 
@@ -157,7 +158,7 @@ public class GetAllPlacedBlocksCommand implements CommandExecutor {
 					messages.add(Text.of(TextColors.YELLOW, "Placement stats for " + targetPlayer.get(Keys.DISPLAY_NAME).get().toPlain() + ":"));
 					for (Map.Entry<String, Integer> entry : amts.entrySet()) {
 						messages.add(Text.of(TextColors.YELLOW, entry.getKey() + ": " + entry.getValue()
-								+ "/" + jjPerms.getPlacedBlocksPermissions(targetPlayer, entry.getKey()) + " blocks"));
+								+ "/" + JJPermissions.getPlacedBlocksPermissions(targetPlayer, entry.getKey()) + " blocks"));
 					}
 					messages.add(Text.of(TextColors.YELLOW, "===================================================="));
 

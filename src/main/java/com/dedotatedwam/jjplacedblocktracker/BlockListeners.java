@@ -4,7 +4,6 @@ package com.dedotatedwam.jjplacedblocktracker;
 import com.dedotatedwam.jjplacedblocktracker.config.BlockEntry;
 import com.dedotatedwam.jjplacedblocktracker.permissions.JJPermissions;
 import com.dedotatedwam.jjplacedblocktracker.storage.SQLManager;
-import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.BlockState;
@@ -22,13 +21,12 @@ import java.util.UUID;
 
 final public class BlockListeners {
 
-	@Inject
 	private Logger logger;
 
 	// Listens to see if a broken block is on the whitelist --> if it is, then it gets the necessary data
 	// and removes it from the locations database
 	@Listener
-	public void onBreakBlock(ChangeBlockEvent.Break event) {
+	public void onBreakBlock(ChangeBlockEvent.Break event, Logger logger, SQLManager sqlManager) {
 
 		// If the break block event was caused by the server
 		if (!event.getCause().first(Player.class).isPresent())
@@ -45,21 +43,20 @@ final public class BlockListeners {
 				int y = transaction.getFinal().getLocation().get().getBlockY();		// etc
 				int z = transaction.getFinal().getLocation().get().getBlockZ();		// etc
 
-				SQLManager sql = new SQLManager(logger);
-				sql.removePlacedBlock(world, x, y, z);
+				sqlManager.removePlacedBlock(world, x, y, z);
 			}
 		}
 	}
 
 	@Listener
-	public void onPlaceBlock(ChangeBlockEvent.Place event) {
+	public void onPlaceBlock(ChangeBlockEvent.Place event, Logger logger, SQLManager sqlManager) {
 		for (Transaction<BlockSnapshot> transaction : event.getTransactions()) {
 			BlockState state = transaction.getFinal().getState();
 			BlockEntry blockEntry = new BlockEntry();
 			Optional<BlockEntry> blockEntryOptional = blockEntry.isWatchedBlock(state);
 
 			JJPermissions jjPerms = new JJPermissions();
-			SQLManager sql = new SQLManager(logger);
+
 			Player playerPlaced;
 			if (event.getCause().first(Player.class).isPresent())
 				playerPlaced = event.getCause().first(Player.class).get();
@@ -72,7 +69,7 @@ final public class BlockListeners {
 				return;		// Do nothing to the event
 			}
 			// If the player has the permission to place it
-			else if (sql.getAmount(getBlockName(state),
+			else if (sqlManager.getAmount(getBlockName(state),
 					playerPlaced.getUniqueId()) < jjPerms.getPlacedBlocksPermissions(playerPlaced, getBlockName(state))) {
 				UUID player_UUID = playerPlaced.getUniqueId();
 				UUID worldID = world.getUniqueId();					// Get the world UUID
@@ -81,7 +78,7 @@ final public class BlockListeners {
 				int y = transaction.getFinal().getLocation().get().getBlockY();		// etc
 				int z = transaction.getFinal().getLocation().get().getBlockZ();		// etc
 
-				sql.addPlacedBlock(player_UUID, block_name, worldID, x, y, z);
+				sqlManager.addPlacedBlock(player_UUID, block_name, worldID, x, y, z);
 			}
 			else {
 				event.setCancelled(true);			// Prevent the player from placing the block
