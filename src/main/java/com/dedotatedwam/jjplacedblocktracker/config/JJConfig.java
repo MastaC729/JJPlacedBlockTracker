@@ -27,11 +27,12 @@ public class JJConfig {
 
 	private final ConfigurationLoader<?> loader;
 	private final ConfigurationNode node;
-	@Setting("Block Whitelist") private List<BlockEntry> blockWhitelist;
+	@Setting("whitelisted_blocks") private List<BlockEntry> blockWhitelist;
 
 	private JJConfig(ConfigurationLoader<?> loader, ConfigurationNode node) {
 		this.loader = loader;
 		this.node = node;
+
 	}
 
 	public static JJConfig fromLoader(ConfigurationLoader<?> loader) throws IOException {
@@ -72,7 +73,14 @@ public class JJConfig {
 		return blockWhitelist;
 	}
 
-
+	public boolean isBlockOnWhitelist (String block_name) {
+		for (BlockEntry blockEntry : blockWhitelist) {
+			String name = blockEntry.getName();
+			if (name.equals(block_name))
+				return true;
+		}
+		return false;
+	}
 
 	public static ConfigurationNode loadDefaultConfiguration() throws IOException {
 		URL defaultConfig = JJConfig.class.getResource("default.conf");

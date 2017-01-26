@@ -1,25 +1,30 @@
 package com.dedotatedwam.jjplacedblocktracker.config;
 
+import com.dedotatedwam.jjplacedblocktracker.JJPlacedBlockTracker;
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.trait.BlockTrait;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @ConfigSerializable
 public class BlockEntry {
 
-	@Setting private String id;
-	@Setting("max-value") private int maxValue;
-	@Setting private String name;
-	@Setting private TraitList traits;
+	@Setting
+	private String id;
+	@Setting
+	private String name;
+	@Setting
+	private TraitList traits;
 
 	public BlockEntry() {
 	}
 
-	public int getMaxValue() {
-		return maxValue;
+	public BlockEntry(String name) {
+		this.name = name;
 	}
 
 	public String getName() {
@@ -61,4 +66,14 @@ public class BlockEntry {
 		return true;
 	}
 
+
+	public Optional<BlockEntry> isWatchedBlock(BlockState state) {
+		List<BlockEntry> blockEntries = JJPlacedBlockTracker.config.getBlockWhitelist();
+		for (BlockEntry blockEntry : blockEntries) {
+			if (blockEntry.equals(state)) {
+				return Optional.of(blockEntry);
+			}
+		}
+		return Optional.empty();
+	}
 }

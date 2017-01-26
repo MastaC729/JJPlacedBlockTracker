@@ -1,17 +1,23 @@
 package com.dedotatedwam.jjplacedblocktracker;
 
+import com.dedotatedwam.jjplacedblocktracker.commands.CommandBuilder;
 import com.dedotatedwam.jjplacedblocktracker.config.JJConfig;
+import com.dedotatedwam.jjplacedblocktracker.permissions.JJPermissions;
 import com.dedotatedwam.jjplacedblocktracker.storage.SQLManager;
 import com.google.inject.Inject;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.slf4j.Logger;
+import org.spongepowered.api.Game;
 import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.state.*;
 import org.spongepowered.api.plugin.Plugin;
+import org.spongepowered.api.service.permission.PermissionDescription;
+import org.spongepowered.api.service.permission.PermissionService;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -21,13 +27,20 @@ public class JJPlacedBlockTracker {
 
 	@Inject
 	private Logger logger;
-
-	private static JJConfig config;
-	@Inject @ConfigDir(sharedRoot = true) private Path configDir;
+	private static File parentDirectory;
+	public static JJConfig config;
+	@Inject @DefaultConfig(sharedRoot = false) private File defaultConfig;
+	@Inject @ConfigDir(sharedRoot = false) private Path configDir;
 	@Inject @DefaultConfig(sharedRoot = true) private ConfigurationLoader<CommentedConfigurationNode> configLoader;
+	@Inject private Game game;
+
+	@Inject
+	JJPlacedBlockTracker (Logger logger) {
+		this.logger = logger;
+	}
 
 	@Listener
-	public void preInit(GamePreInitializationEvent event) {
+	public void preInit(GamePreInitializationEvent event) throws SQLException {
 		try {
 			Files.createDirectories(configDir);
 			config = JJConfig.fromLoader(configLoader);
@@ -35,17 +48,35 @@ public class JJPlacedBlockTracker {
 			logger.warn("Error loading default configuration!");
 		}
 
-		SQLManager sqlManager = new SQLManager();
-		try {
-			sqlManager.testTable();
-		} catch (SQLException e) {
-			logger.error("YOU DUN GOOFED!");
-		}
+		parentDirectory = defaultConfig.getParentFile();
 
+		SQLManager sqlManager = new SQLManager(logger);
+		sqlManager.init();
+
+		JJPermissions jjPerms = new JJPermissions();
+
+		// Registration of permission descriptions - is skipped if no permissions plugin is installed
+		if (game.getServiceManager().provide(PermissionService.class).isPresent()) {
+			PermissionService service = game.getServiceManager().provideUnchecked(PermissionService.class);
+			jjPerms.registerPD(PermissionDescription.ROLE_ADMIN, "jjplacedblocktracker.whitelist.unlimited",
+					"Allows the user to place an unlimited amount of anything on the block whitelist for this plugin.", service);
+			jjPerms.registerPD(PermissionDescription.ROLE_USER, "jjplacedblocktracker.commands.getplacedblocks.self",
+					"Allows the user to check how many blocks they placed of a certain type on the whitelist.", service);
+			jjPerms.registerPD(PermissionDescription.ROLE_USER, "jjplacedblocktracker.commands.getallplacedblocks.self",
+					"Allows the user to check how many blocks they placed of every whitelisted block.", service);
+			jjPerms.registerPD(PermissionDescription.ROLE_STAFF, "jjplacedblocktracker.commands.getplacedblocks.other",
+					"Allows the user to check how many blocks someone else placed of a certain type on the whitelist.", service);
+			jjPerms.registerPD(PermissionDescription.ROLE_STAFF, "jjplacedblocktracker.commands.getallplacedblocks.other",
+					"Allows the user to check how many blocks someone else placed of every whitelisted block.", service);
+		}
+		else {
+			logger.info("Skipping registration of permission descriptions, no permissions plugin installed!");
+		}
 	}
 
 	@Listener
 	public void init(GameInitializationEvent event) {
+		game.getEventManager().registerListeners(this, new BlockListeners());
 	}
 
 	@Listener
@@ -55,15 +86,21 @@ public class JJPlacedBlockTracker {
 
 	@Listener
 	public void onServerStart(GameStartedServerEvent event){
-		logger.info("JJPlacedBlockTracer has started.");
+		CommandBuilder cBuilder = new CommandBuilder(this, logger);
+		cBuilder.buildCommands();
+		logger.info("JJPlacedBlockTracer has finished loading and has started.");
 	}
 
 	@Listener
 	public void onServerStop(GameStoppedServerEvent event) {
-		logger.info("JJPlacedBlockTracer has stopped.");
+
 	}
 
 	public static JJConfig getConfig() {
 		return config;
+	}
+
+	public static File getParentDirectory () {
+		return parentDirectory;
 	}
 }
