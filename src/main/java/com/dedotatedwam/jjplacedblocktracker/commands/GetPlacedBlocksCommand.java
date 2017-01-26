@@ -87,8 +87,6 @@ public class GetPlacedBlocksCommand implements CommandExecutor {
 		//	return CommandResult.success();
 		//}
 
-		JJPermissions jjPerms = new JJPermissions();
-
 		// If the command source is a console or a command block
 		if (src instanceof ConsoleSource || src instanceof CommandBlockSource) {
 			// If they didn't specify a player in the arguments
@@ -101,7 +99,7 @@ public class GetPlacedBlocksCommand implements CommandExecutor {
 			int amt = sqlManager.getAmount(block_name, targetPlayer.getUniqueId());
 			src.sendMessage(Text.of(TextColors.YELLOW, "Player " + targetPlayer.get(Keys.DISPLAY_NAME).get().toPlain() +
 					" has placed the following amount of block type " + block_name + ": " + amt + "/"
-					+ jjPerms.getPlacedBlocksPermissions(targetPlayer, block_name) + " blocks"));
+					+ JJPermissions.getPlacedBlocksPermissions(targetPlayer, block_name) + " blocks"));
 			return CommandResult.success();
 		}
 		// If the command source is a player
@@ -111,7 +109,7 @@ public class GetPlacedBlocksCommand implements CommandExecutor {
 				if (src.hasPermission("jjplacedblocktracker.commands.getplacedblocks.self")) {
 					int amt = sqlManager.getAmount(block_name, ((Player) src).getUniqueId());
 					src.sendMessage(Text.of(TextColors.YELLOW, "You have placed the following amount of block type " + block_name + ": " + amt + "/"
-							+ jjPerms.getPlacedBlocksPermissions(((Player) src).getPlayer().get(), block_name) + " blocks"));
+							+ JJPermissions.getPlacedBlocksPermissions(((Player) src).getPlayer().get(), block_name) + " blocks"));
 					return CommandResult.success();
 				} else {
 					src.sendMessage(Text.of(TextColors.RED,"You do not have permission to do this, ya dangus."));
@@ -124,7 +122,7 @@ public class GetPlacedBlocksCommand implements CommandExecutor {
 					int amt = sqlManager.getAmount(block_name, targetPlayer.getUniqueId());
 					src.sendMessage(Text.of(TextColors.YELLOW, "Player " + targetPlayer.get(Keys.DISPLAY_NAME).get().toPlain() +
 							" has have placed the following amount of block type " + block_name + ": " + amt + "/"
-							+ jjPerms.getPlacedBlocksPermissions(targetPlayer, block_name) + " blocks"));
+							+ JJPermissions.getPlacedBlocksPermissions(targetPlayer, block_name) + " blocks"));
 					return CommandResult.success();
 				} else {
 					src.sendMessage(Text.of(TextColors.RED,"You do not have permission to do this, ya dangus."));

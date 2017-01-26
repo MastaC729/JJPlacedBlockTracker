@@ -22,11 +22,17 @@ import java.util.UUID;
 final public class BlockListeners {
 
 	private Logger logger;
+	private SQLManager sqlManager;
+
+	public BlockListeners(Logger logger, SQLManager sqlManager) {
+		this.logger = logger;
+		this.sqlManager = sqlManager;
+	}
 
 	// Listens to see if a broken block is on the whitelist --> if it is, then it gets the necessary data
 	// and removes it from the locations database
 	@Listener
-	public void onBreakBlock(ChangeBlockEvent.Break event, Logger logger, SQLManager sqlManager) {
+	public void onBreakBlock(ChangeBlockEvent.Break event) {
 
 		// If the break block event was caused by the server
 		if (!event.getCause().first(Player.class).isPresent())
@@ -49,13 +55,11 @@ final public class BlockListeners {
 	}
 
 	@Listener
-	public void onPlaceBlock(ChangeBlockEvent.Place event, Logger logger, SQLManager sqlManager) {
+	public void onPlaceBlock(ChangeBlockEvent.Place event) {
 		for (Transaction<BlockSnapshot> transaction : event.getTransactions()) {
 			BlockState state = transaction.getFinal().getState();
 			BlockEntry blockEntry = new BlockEntry();
 			Optional<BlockEntry> blockEntryOptional = blockEntry.isWatchedBlock(state);
-
-			JJPermissions jjPerms = new JJPermissions();
 
 			Player playerPlaced;
 			if (event.getCause().first(Player.class).isPresent())
@@ -70,7 +74,7 @@ final public class BlockListeners {
 			}
 			// If the player has the permission to place it
 			else if (sqlManager.getAmount(getBlockName(state),
-					playerPlaced.getUniqueId()) < jjPerms.getPlacedBlocksPermissions(playerPlaced, getBlockName(state))) {
+					playerPlaced.getUniqueId()) < JJPermissions.getPlacedBlocksPermissions(playerPlaced, getBlockName(state))) {
 				UUID player_UUID = playerPlaced.getUniqueId();
 				UUID worldID = world.getUniqueId();					// Get the world UUID
 				String block_name = getBlockName(state);			// The name this plugin considers the block as

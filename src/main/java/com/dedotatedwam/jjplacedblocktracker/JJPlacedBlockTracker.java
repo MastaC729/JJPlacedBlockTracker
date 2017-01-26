@@ -29,7 +29,7 @@ public class JJPlacedBlockTracker {
 	public static JJConfig config;
 	public SQLManager sqlManager;
 	@Inject @ConfigDir(sharedRoot = false) private Path configDir;
-	@Inject @DefaultConfig(sharedRoot = true) private ConfigurationLoader<CommentedConfigurationNode> configLoader;
+	@Inject @DefaultConfig(sharedRoot = false) private ConfigurationLoader<CommentedConfigurationNode> configLoader;
 	@Inject private Game game;
 
 	@Listener
@@ -43,20 +43,18 @@ public class JJPlacedBlockTracker {
 
 		sqlManager = new SQLManager(logger, configDir);
 
-		JJPermissions jjPerms = new JJPermissions();
-
 		// Registration of permission descriptions - is skipped if no permissions plugin is installed
 		if (game.getServiceManager().provide(PermissionService.class).isPresent()) {
 			PermissionService service = game.getServiceManager().provideUnchecked(PermissionService.class);
-			jjPerms.registerPD(PermissionDescription.ROLE_ADMIN, "jjplacedblocktracker.whitelist.unlimited",
+			JJPermissions.registerPD(PermissionDescription.ROLE_ADMIN, "jjplacedblocktracker.whitelist.unlimited",
 					"Allows the user to place an unlimited amount of anything on the block whitelist for this plugin.", service);
-			jjPerms.registerPD(PermissionDescription.ROLE_USER, "jjplacedblocktracker.commands.getplacedblocks.self",
+			JJPermissions.registerPD(PermissionDescription.ROLE_USER, "jjplacedblocktracker.commands.getplacedblocks.self",
 					"Allows the user to check how many blocks they placed of a certain type on the whitelist.", service);
-			jjPerms.registerPD(PermissionDescription.ROLE_USER, "jjplacedblocktracker.commands.getallplacedblocks.self",
+			JJPermissions.registerPD(PermissionDescription.ROLE_USER, "jjplacedblocktracker.commands.getallplacedblocks.self",
 					"Allows the user to check how many blocks they placed of every whitelisted block.", service);
-			jjPerms.registerPD(PermissionDescription.ROLE_STAFF, "jjplacedblocktracker.commands.getplacedblocks.other",
+			JJPermissions.registerPD(PermissionDescription.ROLE_STAFF, "jjplacedblocktracker.commands.getplacedblocks.other",
 					"Allows the user to check how many blocks someone else placed of a certain type on the whitelist.", service);
-			jjPerms.registerPD(PermissionDescription.ROLE_STAFF, "jjplacedblocktracker.commands.getallplacedblocks.other",
+			JJPermissions.registerPD(PermissionDescription.ROLE_STAFF, "jjplacedblocktracker.commands.getallplacedblocks.other",
 					"Allows the user to check how many blocks someone else placed of every whitelisted block.", service);
 		}
 		else {
@@ -66,7 +64,7 @@ public class JJPlacedBlockTracker {
 
 	@Listener
 	public void init(GameInitializationEvent event) {
-		game.getEventManager().registerListeners(this, new BlockListeners());
+		game.getEventManager().registerListeners(this, new BlockListeners(logger, sqlManager));
 	}
 
 	@Listener

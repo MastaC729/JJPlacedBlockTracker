@@ -54,8 +54,6 @@ public class GetAllPlacedBlocksCommand implements CommandExecutor {
 			}
 		}
 
-		JJPermissions jjPerms = new JJPermissions();
-
 		if (src instanceof ConsoleSource || src instanceof CommandBlockSource) {
 			// If they didn't specify a player in the arguments
 			if (targetPlayer == null) {

@@ -27,6 +27,7 @@ public class JJConfig {
 
 	private final ConfigurationLoader<?> loader;
 	private final ConfigurationNode node;
+	@Setting (value = "Jiving Janko PlacedBlockTracker Configuration", comment = "#") private String header;
 	@Setting("whitelisted_blocks") private List<BlockEntry> blockWhitelist;
 
 	private JJConfig(ConfigurationLoader<?> loader, ConfigurationNode node) {
