@@ -1246,7 +1246,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1056" extended-state="7" />
+    <frame x="-8" y="-8" width="1936" height="1056" extended-state="1" />
     <editor active="true" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -1299,7 +1299,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/dedotatedwam/jjplacedblocktracer/storage/mongodb/MongoRecords.java" />
     <entry file="file://$PROJECT_DIR$/src/main/java/com/dedotatedwam/jjplacedblocktracer/storage/mongodb/MongoStorageAdapter.java" />
     <entry file="file://$PROJECT_DIR$/src/main/java/com/dedotatedwam/jjplacedblocktracer/JJPlacedBlockTracker.java" />
     <entry file="file://$PROJECT_DIR$/src/main/java/com/dedotatedwam/jjplacedblocktracker/storage/mongodb/MongoRecords.java" />
@@ -1592,6 +1591,14 @@
           <folding>
             <element signature="imports" expanded="false" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/JJPlacedBlockTracker.iml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
