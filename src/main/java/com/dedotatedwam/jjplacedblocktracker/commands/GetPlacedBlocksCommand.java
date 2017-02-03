@@ -13,7 +13,6 @@ import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.source.CommandBlockSource;
 import org.spongepowered.api.command.source.ConsoleSource;
 import org.spongepowered.api.command.spec.CommandExecutor;
-import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.service.user.UserStorageService;
@@ -21,7 +20,11 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
 import java.util.Optional;
+import java.util.UUID;
 
+
+
+//TODO rewrite this whole class, it makes me want to drink bleach
 public class GetPlacedBlocksCommand implements CommandExecutor {
 
 	private Logger logger;
@@ -35,7 +38,8 @@ public class GetPlacedBlocksCommand implements CommandExecutor {
 	@Override
 	public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
 
-		Player targetPlayer = null;
+		UUID targetPlayer = null;
+		User targetUser = null;
 		String block_name;
 
 		// Check to see if a block name was given and if the block name is in the whitelist
@@ -69,7 +73,7 @@ public class GetPlacedBlocksCommand implements CommandExecutor {
 			}
 		}
 		// Check to see if a player was given and if the player is a valid username
-		else  {
+		else {
 			String playerArg = args.<String>getOne("player").get();
 			Optional<UserStorageService> userStorage = Sponge.getServiceManager().provide(UserStorageService.class);
 			Optional<User> playerArgTest = userStorage.get().get(playerArg);
@@ -77,7 +81,9 @@ public class GetPlacedBlocksCommand implements CommandExecutor {
 				src.sendMessage(Text.of(TextColors.RED, "User is invalid or has not logged into this server yet!"));
 				return CommandResult.empty();
 			}
-			targetPlayer = userStorage.get().get(playerArg).get().getPlayer().get();
+
+			targetPlayer = playerArgTest.get().getUniqueId();
+			targetUser = playerArgTest.get();
 		}
 
 		// User is likely checking for usage of the command - no arguments or only player given w/ no block name
@@ -96,10 +102,10 @@ public class GetPlacedBlocksCommand implements CommandExecutor {
 			}
 
 			// Assuming they gave both a player and a block_name
-			int amt = sqlManager.getAmount(block_name, targetPlayer.getUniqueId());
-			src.sendMessage(Text.of(TextColors.YELLOW, "Player " + targetPlayer.get(Keys.DISPLAY_NAME).get().toPlain() +
+			int amt = sqlManager.getAmount(block_name, targetPlayer);
+			src.sendMessage(Text.of(TextColors.YELLOW, "Player " + targetUser.getName() +
 					" has placed the following amount of block type " + block_name + ": " + amt + "/"
-					+ JJPermissions.getPlacedBlocksPermissions(targetPlayer, block_name) + " blocks"));
+					+ JJPermissions.getPlacedBlocksPermissions(targetUser, block_name) + " blocks"));
 			return CommandResult.success();
 		}
 		// If the command source is a player
@@ -116,13 +122,14 @@ public class GetPlacedBlocksCommand implements CommandExecutor {
 					return CommandResult.empty();
 				}
 			}
-			// If they're looking up someone else
+			// If they're looking up someone else of the person they are looking up is themself
 			else {
-				if (src.hasPermission("jjplacedblocktracker.commands.getplacedblocks.other")) {
-					int amt = sqlManager.getAmount(block_name, targetPlayer.getUniqueId());
-					src.sendMessage(Text.of(TextColors.YELLOW, "Player " + targetPlayer.get(Keys.DISPLAY_NAME).get().toPlain() +
+				if (src.hasPermission("jjplacedblocktracker.commands.getplacedblocks.other")
+						|| ((Player) src).getPlayer().get().getUniqueId().equals(targetPlayer)) {
+					int amt = sqlManager.getAmount(block_name, targetPlayer);
+					src.sendMessage(Text.of(TextColors.YELLOW, "Player " + targetUser.getName() +
 							" has have placed the following amount of block type " + block_name + ": " + amt + "/"
-							+ JJPermissions.getPlacedBlocksPermissions(targetPlayer, block_name) + " blocks"));
+							+ JJPermissions.getPlacedBlocksPermissions(targetUser, block_name) + " blocks"));
 					return CommandResult.success();
 				} else {
 					src.sendMessage(Text.of(TextColors.RED,"You do not have permission to do this, ya dangus."));

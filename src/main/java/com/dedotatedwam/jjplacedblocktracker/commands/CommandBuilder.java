@@ -22,12 +22,14 @@ public class CommandBuilder {
 	}
 
 	public void buildCommands () {
-		// Command /getplacedblocks [player] [block_name]
+
+		// Command /getplacedblocks [player]|[block_name] [block_name]
 		Sponge.getCommandManager().register(plugin, CommandSpec.builder()
 				.description(Text.of("Reports the number of blocks you placed that are of a certain type on the whitelist."))
-				.permission("jjplacedblocktracker.commands.getplacedblocks")
+				.permission("jjplacedblocktracker.commands.getplacedblocks.self")
 				.arguments(GenericArguments.firstParsing(
-						GenericArguments.string(Text.of("player")),
+						GenericArguments.requiringPermission(
+								GenericArguments.string(Text.of("player")),"jjplacedblocktracker.commands.getplacedblocks.other"),
 						GenericArguments.string(Text.of("block_name"))),
 						GenericArguments.optional(GenericArguments.onlyOne(GenericArguments.string(Text.of("block_name")))))
 				.executor(new GetPlacedBlocksCommand(logger, sqlManager))
@@ -36,8 +38,9 @@ public class CommandBuilder {
 		// Command /getallplacedblocks [player]
 		Sponge.getCommandManager().register(plugin, CommandSpec.builder()
 				.description(Text.of("Reports the number of all blocks you placed that are on the whitelist."))
-				.permission("jjplacedblocktracker.commands.getallplacedblocks")
-				.arguments(GenericArguments.optional(GenericArguments.onlyOne(GenericArguments.string(Text.of("player")))))
+				.permission("jjplacedblocktracker.commands.getallplacedblocks.self")
+				.arguments(GenericArguments.optional(GenericArguments.requiringPermission(GenericArguments.onlyOne(
+						GenericArguments.string(Text.of("player"))),"jjplacedblocktracker.commands.getallplacedblocks.other")))
 				.executor(new GetAllPlacedBlocksCommand(logger, sqlManager))
 				.build(), "getallplacedblocks", "getapb");
 	}

@@ -1,5 +1,6 @@
 package com.dedotatedwam.jjplacedblocktracker.config;
 
+import com.dedotatedwam.jjplacedblocktracker.permissions.JJOptions;
 import com.google.common.reflect.TypeToken;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
@@ -13,6 +14,7 @@ import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 
 // Initializes default config or loads modified config
 
@@ -27,13 +29,13 @@ public class JJConfig {
 
 	private final ConfigurationLoader<?> loader;
 	private final ConfigurationNode node;
+	private static Map<String, Integer> defaultOptions;
 	@Setting (value = "Jiving Janko PlacedBlockTracker Configuration", comment = "#") private String header;
 	@Setting("whitelisted_blocks") private List<BlockEntry> blockWhitelist;
 
 	private JJConfig(ConfigurationLoader<?> loader, ConfigurationNode node) {
 		this.loader = loader;
 		this.node = node;
-
 	}
 
 	public static JJConfig fromLoader(ConfigurationLoader<?> loader) throws IOException {
@@ -43,12 +45,13 @@ public class JJConfig {
 			fallbackConfig = loadDefaultConfiguration();
 		}
 		catch (IOException e) {
-			throw new Error("Default configuration could not be loaded!");
+			throw new Error("[JJPlacedBlockTracker] Default configuration could not be loaded!");
 		}
 		node.mergeValuesFrom(fallbackConfig);
 
 		JJConfig config = new JJConfig(loader, node);
 		config.load();
+		defaultOptions = JJOptions.createDefaultOptions(config);
 		return config;
 	}
 
@@ -83,10 +86,12 @@ public class JJConfig {
 		return false;
 	}
 
+	public Map<String, Integer> getOptions() { return defaultOptions; }
+
 	public static ConfigurationNode loadDefaultConfiguration() throws IOException {
 		URL defaultConfig = JJConfig.class.getResource("default.conf");
 		if (defaultConfig == null) {
-			throw new Error("Default config is not present in jar.");
+			throw new Error("[JJPlacedBlockTracker] Default config is not present in jar.");
 		}
 		HoconConfigurationLoader fallbackLoader = HoconConfigurationLoader.builder().setURL(defaultConfig).build();
 		return fallbackLoader.load();

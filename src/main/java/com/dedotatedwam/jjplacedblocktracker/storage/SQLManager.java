@@ -7,7 +7,11 @@ import org.spongepowered.api.service.sql.SqlService;
 
 import javax.sql.DataSource;
 import java.nio.file.Path;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
 import java.util.UUID;
 
 public class SQLManager {
@@ -55,13 +59,14 @@ public class SQLManager {
 	public void addPlacedBlock (UUID player_UUID, String block_name, UUID world, int x, int y, int z) {
 		try (Connection conn = dataSource.getConnection()) {
 			PreparedStatement stmt = conn.prepareStatement(
-					"INSERT INTO locations (player_id, block_name, world, x, y, z) VALUES (?, ?, ?, ?, ?, ?);");
+					"INSERT INTO locations (player_id, time, block_name, world, x, y, z) VALUES (?, ?, ?, ?, ?, ?, ?);");
 			stmt.setInt(1, getPlayerID(player_UUID));
-			stmt.setString(2, block_name);
-			stmt.setString(3, world.toString());
-			stmt.setInt(4, x);
-			stmt.setInt(5, y);
-			stmt.setInt(6, z);
+			stmt.setLong(2, System.currentTimeMillis()/1000);		// Gets the current Epoch time in seconds
+			stmt.setString(3, block_name);
+			stmt.setString(4, world.toString());
+			stmt.setInt(5, x);
+			stmt.setInt(6, y);
+			stmt.setInt(7, z);
 			stmt.executeUpdate();
 		} catch (Exception e) {
 			logger.error("Error adding placed block entry to database! ", e);
@@ -104,6 +109,13 @@ public class SQLManager {
 		return 0;
 	}
 
+	// Gets the blocks placed within a specified timeframe
+	// Used in the command /getplacedblocksage <player> <timeframe>
+	public List<Long> getPlacedBlockTime (String timeframe) {
+
+		return null;
+	}
+
 	// Initializes the following databases:
 	// players: converts the player's UUID to a more lightweight int
 	// locations: stores each block placed within the whitelist
@@ -131,6 +143,7 @@ public class SQLManager {
 			// world, x, y, and z: obtained from getBlockState
 			stmt = conn.prepareStatement("CREATE TABLE IF NOT EXISTS locations ( "
 					+ "player_id INT, "
+					+ "time LONG"
 					+ "block_name VARCHAR(36), "
 					+ "world VARCHAR(36), "
 					+ "x INT, "

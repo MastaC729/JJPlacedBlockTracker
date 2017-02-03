@@ -13,7 +13,6 @@ import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.source.CommandBlockSource;
 import org.spongepowered.api.command.source.ConsoleSource;
 import org.spongepowered.api.command.spec.CommandExecutor;
-import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.service.user.UserStorageService;
@@ -22,6 +21,7 @@ import org.spongepowered.api.text.format.TextColors;
 
 import java.util.*;
 
+//TODO rewrite this whole class, it makes me want to drink bleach
 public class GetAllPlacedBlocksCommand implements CommandExecutor {
 
 	private Logger logger;
@@ -35,7 +35,8 @@ public class GetAllPlacedBlocksCommand implements CommandExecutor {
 	@Override
 	public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
 
-		Player targetPlayer = null;
+		UUID targetPlayer = null;
+		User targetUser = null;
 
 		// Check to see if a player was given and if the player is a valid username
 		if (args.<String>getOne("player").isPresent()) {
@@ -47,7 +48,9 @@ public class GetAllPlacedBlocksCommand implements CommandExecutor {
 					src.sendMessage(Text.of(TextColors.RED, "User is invalid or has not logged into this server yet!"));
 					return CommandResult.empty();
 				}
-				targetPlayer = userStorage.get().get(playerArg).get().getPlayer().get();
+				targetPlayer = playerArgTest.get().getUniqueId();
+				targetUser = playerArgTest.get();
+
 			} else {
 				src.sendMessage(Text.of(TextColors.RED, "Invalid username!"));
 				return CommandResult.empty();
@@ -67,7 +70,7 @@ public class GetAllPlacedBlocksCommand implements CommandExecutor {
 
 				for (BlockEntry blockEntry : blockEntries) {
 					String block_name = blockEntry.getName();
-					int amt = sqlManager.getAmount(block_name, targetPlayer.getUniqueId());
+					int amt = sqlManager.getAmount(block_name, targetPlayer);
 					amts.put(block_name, amt);
 				}
 
@@ -80,10 +83,10 @@ public class GetAllPlacedBlocksCommand implements CommandExecutor {
 				// Pretty print the list of placed blocks and their amount / total allowed blocks
 				List<Text> messages = new ArrayList<>();
 				messages.add(Text.of(TextColors.YELLOW, "===================================================="));
-				messages.add(Text.of(TextColors.YELLOW, "Placement stats for " + targetPlayer.get(Keys.DISPLAY_NAME).get().toPlain() + ":"));
+				messages.add(Text.of(TextColors.YELLOW, "Placement stats for " + targetUser.getName() + ":"));
 				for (Map.Entry<String, Integer> entry : amts.entrySet()) {
 					messages.add(Text.of(TextColors.YELLOW, entry.getKey() + ": " + entry.getValue()
-							+ "/" + JJPermissions.getPlacedBlocksPermissions(targetPlayer, entry.getKey()) + " blocks"));
+							+ "/" + JJPermissions.getPlacedBlocksPermissions(targetUser, entry.getKey()) + " blocks"));
 				}
 				messages.add(Text.of(TextColors.YELLOW, "===================================================="));
 
@@ -131,32 +134,35 @@ public class GetAllPlacedBlocksCommand implements CommandExecutor {
 					return CommandResult.empty();
 				}
 			}
-			// If they're looking up someone else
+			// If they're looking up someone else or if the person they're looking up is themself
 			else {
-				if (src.hasPermission("jjplacedblocktracker.commands.getplacedblocks.other")) {
+				if (src.hasPermission("jjplacedblocktracker.commands.getplacedblocks.other")
+						|| ((Player) src).getPlayer().get().getUniqueId().equals(targetPlayer)) {
 					Map<String, Integer> amts = new HashMap<>();
 
 					List<BlockEntry> blockEntries = JJPlacedBlockTracker.config.getBlockWhitelist();
 
 					for (BlockEntry blockEntry : blockEntries) {
 						String block_name = blockEntry.getName();
-						int amt = sqlManager.getAmount(block_name, targetPlayer.getUniqueId());
+						int amt = sqlManager.getAmount(block_name, targetPlayer);
 						amts.put(block_name, amt);
 					}
 
 					// If the player has not placed any whitelisted blocks
 					if (amts.isEmpty()) {
-						src.sendMessage(Text.of(TextColors.YELLOW, "Player " + targetPlayer + "has not placed any blocks that are on the whitelist."));
+						src.sendMessage(Text.of(TextColors.YELLOW, "Player "
+								+ targetUser.getName()
+								+ "has not placed any blocks that are on the whitelist."));
 						return CommandResult.success();
 					}
 
 					// Pretty print the list of placed blocks and their amount / total allowed blocks
 					List<Text> messages = new ArrayList<>();
 					messages.add(Text.of(TextColors.YELLOW, "===================================================="));
-					messages.add(Text.of(TextColors.YELLOW, "Placement stats for " + targetPlayer.get(Keys.DISPLAY_NAME).get().toPlain() + ":"));
+					messages.add(Text.of(TextColors.YELLOW, "Placement stats for " + targetUser.getName() + ":"));
 					for (Map.Entry<String, Integer> entry : amts.entrySet()) {
 						messages.add(Text.of(TextColors.YELLOW, entry.getKey() + ": " + entry.getValue()
-								+ "/" + JJPermissions.getPlacedBlocksPermissions(targetPlayer, entry.getKey()) + " blocks"));
+								+ "/" + JJPermissions.getPlacedBlocksPermissions(targetUser, entry.getKey()) + " blocks"));
 					}
 					messages.add(Text.of(TextColors.YELLOW, "===================================================="));
 

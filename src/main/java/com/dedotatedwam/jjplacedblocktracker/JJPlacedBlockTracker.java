@@ -16,6 +16,7 @@ import org.spongepowered.api.event.game.state.*;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.service.permission.PermissionDescription;
 import org.spongepowered.api.service.permission.PermissionService;
+import org.spongepowered.api.service.permission.Subject;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,6 +33,9 @@ public class JJPlacedBlockTracker {
 	@Inject @DefaultConfig(sharedRoot = false) private ConfigurationLoader<CommentedConfigurationNode> configLoader;
 	@Inject private Game game;
 
+	public static Subject GLOBAL_SUBJECT;
+	public PermissionService permissionService;
+
 	@Listener
 	public void preInit(GamePreInitializationEvent event) throws SQLException {
 		try {
@@ -43,19 +47,24 @@ public class JJPlacedBlockTracker {
 
 		sqlManager = new SQLManager(logger, configDir);
 
+		GLOBAL_SUBJECT = this.permissionService.getDefaults();
+
+		// Set custom options for block whitelist - handles max placed blocks
+		JJPermissions.setOptionPermissions();
+
 		// Registration of permission descriptions - is skipped if no permissions plugin is installed
 		if (game.getServiceManager().provide(PermissionService.class).isPresent()) {
-			PermissionService service = game.getServiceManager().provideUnchecked(PermissionService.class);
+			permissionService = game.getServiceManager().provideUnchecked(PermissionService.class);
 			JJPermissions.registerPD(PermissionDescription.ROLE_ADMIN, "jjplacedblocktracker.whitelist.unlimited",
-					"Allows the user to place an unlimited amount of anything on the block whitelist for this plugin.", service);
+					"Allows the user to place an unlimited amount of anything on the block whitelist for this plugin.", permissionService);
 			JJPermissions.registerPD(PermissionDescription.ROLE_USER, "jjplacedblocktracker.commands.getplacedblocks.self",
-					"Allows the user to check how many blocks they placed of a certain type on the whitelist.", service);
+					"Allows the user to check how many blocks they placed of a certain type on the whitelist.", permissionService);
 			JJPermissions.registerPD(PermissionDescription.ROLE_USER, "jjplacedblocktracker.commands.getallplacedblocks.self",
-					"Allows the user to check how many blocks they placed of every whitelisted block.", service);
+					"Allows the user to check how many blocks they placed of every whitelisted block.", permissionService);
 			JJPermissions.registerPD(PermissionDescription.ROLE_STAFF, "jjplacedblocktracker.commands.getplacedblocks.other",
-					"Allows the user to check how many blocks someone else placed of a certain type on the whitelist.", service);
+					"Allows the user to check how many blocks someone else placed of a certain type on the whitelist.", permissionService);
 			JJPermissions.registerPD(PermissionDescription.ROLE_STAFF, "jjplacedblocktracker.commands.getallplacedblocks.other",
-					"Allows the user to check how many blocks someone else placed of every whitelisted block.", service);
+					"Allows the user to check how many blocks someone else placed of every whitelisted block.", permissionService);
 		}
 		else {
 			logger.info("Skipping registration of permission descriptions, no permissions plugin installed!");
@@ -76,6 +85,7 @@ public class JJPlacedBlockTracker {
 	public void onServerStart(GameStartedServerEvent event){
 		CommandBuilder cBuilder = new CommandBuilder(this, logger, sqlManager);
 		cBuilder.buildCommands();
+
 		logger.info("JJPlacedBlockTracer has finished loading and has started.");
 	}
 
@@ -90,5 +100,9 @@ public class JJPlacedBlockTracker {
 
 	public Path getConfigDir() {
 		return configDir;
+	}
+
+	public Logger getLogger() {
+		return logger;
 	}
 }
