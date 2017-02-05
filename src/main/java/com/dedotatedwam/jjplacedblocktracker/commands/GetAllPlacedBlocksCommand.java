@@ -41,7 +41,7 @@ public class GetAllPlacedBlocksCommand implements CommandExecutor {
 		// Check to see if a player was given and if the player is a valid username
 		if (args.<String>getOne("player").isPresent()) {
 			String playerArg = args.<String>getOne("player").get();
-			if (playerArg.length() > 2 && playerArg.length() < 15) {
+			if (playerArg.length() > 2 && playerArg.length() <= 16) {
 				Optional<UserStorageService> userStorage = Sponge.getServiceManager().provide(UserStorageService.class);
 				Optional<User> playerArgTest = userStorage.get().get(playerArg);
 				if (!playerArgTest.isPresent()) {
@@ -82,13 +82,13 @@ public class GetAllPlacedBlocksCommand implements CommandExecutor {
 
 				// Pretty print the list of placed blocks and their amount / total allowed blocks
 				List<Text> messages = new ArrayList<>();
-				messages.add(Text.of(TextColors.YELLOW, "===================================================="));
+				messages.add(Text.of(TextColors.YELLOW, "====================================================="));
 				messages.add(Text.of(TextColors.YELLOW, "Placement stats for " + targetUser.getName() + ":"));
 				for (Map.Entry<String, Integer> entry : amts.entrySet()) {
 					messages.add(Text.of(TextColors.YELLOW, entry.getKey() + ": " + entry.getValue()
 							+ "/" + JJPermissions.getPlacedBlocksPermissions(targetUser, entry.getKey()) + " blocks"));
 				}
-				messages.add(Text.of(TextColors.YELLOW, "===================================================="));
+				messages.add(Text.of(TextColors.YELLOW, "====================================================="));
 
 				src.sendMessages(messages);
 				return CommandResult.success();
@@ -118,13 +118,13 @@ public class GetAllPlacedBlocksCommand implements CommandExecutor {
 
 					// Pretty print the list of placed blocks and their amount / total allowed blocks
 					List<Text> messages = new ArrayList<>();
-					messages.add(Text.of(TextColors.YELLOW, "===================================================="));
+					messages.add(Text.of(TextColors.YELLOW, "====================================================="));
 					messages.add(Text.of(TextColors.YELLOW, "Placement stats: "));
 					for (Map.Entry<String, Integer> entry : amts.entrySet()) {
 						messages.add(Text.of(TextColors.YELLOW, entry.getKey() + ": " + entry.getValue()
 								+ "/" + JJPermissions.getPlacedBlocksPermissions((Player) src, entry.getKey()) + " blocks"));
 					}
-					messages.add(Text.of(TextColors.YELLOW, "===================================================="));
+					messages.add(Text.of(TextColors.YELLOW, "====================================================="));
 
 					src.sendMessages(messages);
 					return CommandResult.success();
@@ -158,13 +158,13 @@ public class GetAllPlacedBlocksCommand implements CommandExecutor {
 
 					// Pretty print the list of placed blocks and their amount / total allowed blocks
 					List<Text> messages = new ArrayList<>();
-					messages.add(Text.of(TextColors.YELLOW, "===================================================="));
+					messages.add(Text.of(TextColors.YELLOW, "====================================================="));
 					messages.add(Text.of(TextColors.YELLOW, "Placement stats for " + targetUser.getName() + ":"));
 					for (Map.Entry<String, Integer> entry : amts.entrySet()) {
 						messages.add(Text.of(TextColors.YELLOW, entry.getKey() + ": " + entry.getValue()
 								+ "/" + JJPermissions.getPlacedBlocksPermissions(targetUser, entry.getKey()) + " blocks"));
 					}
-					messages.add(Text.of(TextColors.YELLOW, "===================================================="));
+					messages.add(Text.of(TextColors.YELLOW, "====================================================="));
 
 					src.sendMessages(messages);
 					return CommandResult.success();

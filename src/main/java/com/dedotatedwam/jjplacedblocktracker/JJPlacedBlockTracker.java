@@ -2,7 +2,6 @@ package com.dedotatedwam.jjplacedblocktracker;
 
 import com.dedotatedwam.jjplacedblocktracker.commands.CommandBuilder;
 import com.dedotatedwam.jjplacedblocktracker.config.JJConfig;
-import com.dedotatedwam.jjplacedblocktracker.permissions.JJPermissions;
 import com.dedotatedwam.jjplacedblocktracker.storage.SQLManager;
 import com.google.inject.Inject;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
@@ -14,7 +13,6 @@ import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.state.*;
 import org.spongepowered.api.plugin.Plugin;
-import org.spongepowered.api.service.permission.PermissionDescription;
 import org.spongepowered.api.service.permission.PermissionService;
 import org.spongepowered.api.service.permission.Subject;
 
@@ -31,7 +29,7 @@ public class JJPlacedBlockTracker {
 	public SQLManager sqlManager;
 	@Inject @ConfigDir(sharedRoot = false) private Path configDir;
 	@Inject @DefaultConfig(sharedRoot = false) private ConfigurationLoader<CommentedConfigurationNode> configLoader;
-	@Inject private Game game;
+	@Inject Game game;
 
 	public static Subject GLOBAL_SUBJECT;
 	public PermissionService permissionService;
@@ -47,12 +45,12 @@ public class JJPlacedBlockTracker {
 
 		sqlManager = new SQLManager(logger, configDir);
 
-		GLOBAL_SUBJECT = this.permissionService.getDefaults();
-
 		// Set custom options for block whitelist - handles max placed blocks
-		JJPermissions.setOptionPermissions();
+		// JJPermissions.setOptionPermissions();
 
 		// Registration of permission descriptions - is skipped if no permissions plugin is installed
+		// I don't know how to do this yet, so screw it
+		/* Optional<PermissionDescription.Builder> optBuilder = permissionService.newDescriptionBuilder(this);
 		if (game.getServiceManager().provide(PermissionService.class).isPresent()) {
 			permissionService = game.getServiceManager().provideUnchecked(PermissionService.class);
 			JJPermissions.registerPD(PermissionDescription.ROLE_ADMIN, "jjplacedblocktracker.whitelist.unlimited",
@@ -68,7 +66,7 @@ public class JJPlacedBlockTracker {
 		}
 		else {
 			logger.info("Skipping registration of permission descriptions, no permissions plugin installed!");
-		}
+		}*/
 	}
 
 	@Listener

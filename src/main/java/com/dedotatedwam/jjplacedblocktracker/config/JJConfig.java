@@ -1,6 +1,5 @@
 package com.dedotatedwam.jjplacedblocktracker.config;
 
-import com.dedotatedwam.jjplacedblocktracker.permissions.JJOptions;
 import com.google.common.reflect.TypeToken;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
@@ -14,7 +13,6 @@ import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
-import java.util.Map;
 
 // Initializes default config or loads modified config
 
@@ -29,7 +27,6 @@ public class JJConfig {
 
 	private final ConfigurationLoader<?> loader;
 	private final ConfigurationNode node;
-	private static Map<String, Integer> defaultOptions;
 	@Setting (value = "Jiving Janko PlacedBlockTracker Configuration", comment = "#") private String header;
 	@Setting("whitelisted_blocks") private List<BlockEntry> blockWhitelist;
 
@@ -51,7 +48,6 @@ public class JJConfig {
 
 		JJConfig config = new JJConfig(loader, node);
 		config.load();
-		defaultOptions = JJOptions.createDefaultOptions(config);
 		return config;
 	}
 
@@ -85,8 +81,6 @@ public class JJConfig {
 		}
 		return false;
 	}
-
-	public Map<String, Integer> getOptions() { return defaultOptions; }
 
 	public static ConfigurationNode loadDefaultConfiguration() throws IOException {
 		URL defaultConfig = JJConfig.class.getResource("default.conf");

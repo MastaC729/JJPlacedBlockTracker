@@ -43,5 +43,20 @@ public class CommandBuilder {
 						GenericArguments.string(Text.of("player"))),"jjplacedblocktracker.commands.getallplacedblocks.other")))
 				.executor(new GetAllPlacedBlocksCommand(logger, sqlManager))
 				.build(), "getallplacedblocks", "getapb");
+
+		// Command /getplacedblocksage [player] [block_name] [timeframe]
+		Sponge.getCommandManager().register(plugin, CommandSpec.builder()
+				.description(Text.of("Reports the blocks placed before a specified timeframe"))
+				.permission("jjplacedblocktracker.commands.getplacedblocksage.self")
+				.arguments(GenericArguments.firstParsing(
+						GenericArguments.string(Text.of("player")),
+						GenericArguments.string(Text.of("block_name")),
+						GenericArguments.string(Text.of("timeframe"))),
+						GenericArguments.optional(GenericArguments.firstParsing(
+								GenericArguments.string(Text.of("block_name")),
+								GenericArguments.string(Text.of("timeframe")))),
+						GenericArguments.optional(GenericArguments.onlyOne(GenericArguments.string(Text.of("timeframe")))))
+				.executor(new GetPlacedBlocksAgeCommand(logger, sqlManager))
+				.build(), "getplacedblocksage", "getpbage", "getpba");
 	}
 }

@@ -58,7 +58,7 @@ public class GetPlacedBlocksCommand implements CommandExecutor {
 		// If the player argument is actually a block_name argument in disguise
 		if (args.<String>getOne("player").isPresent() && block_name == null) {
 			String playerArg = args.<String>getOne("player").get();
-			if (playerArg.length() > 2 && playerArg.length() < 15) {		// A valid Minecraft username
+			if (playerArg.length() > 2 && playerArg.length() <= 16) {		// A valid Minecraft username
 				Optional<UserStorageService> userStorage = Sponge.getServiceManager().provide(UserStorageService.class);
 				Optional<User> playerArgTest = userStorage.get().get(playerArg);
 				if (playerArgTest.isPresent()) {
