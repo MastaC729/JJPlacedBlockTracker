@@ -26,7 +26,8 @@ public class JJPermissions {
 	}
 
 	public static int getPlacedBlocksPermissions (User subject, String block_name) {
-		if (subject.hasPermission("jjplacedblocktracker.whitelist.unlimited")) {
+		if (subject.hasPermission("jjplacedblocktracker.whitelist.unlimited")
+				|| subject.hasPermission("jjplacedblocktracker.whitelist.unlimited" + block_name)) {
 			return Integer.MAX_VALUE;
 		}
 

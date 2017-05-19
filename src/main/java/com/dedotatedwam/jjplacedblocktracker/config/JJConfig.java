@@ -12,6 +12,7 @@ import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 // Initializes default config or loads modified config
@@ -73,6 +74,16 @@ public class JJConfig {
 		return blockWhitelist;
 	}
 
+	public List<String> getBlockWhiteListNames () {
+		List<String> list = new ArrayList<>();
+
+		for (BlockEntry blockEntry : blockWhitelist) {
+			list.add(blockEntry.getName());
+		}
+
+		return list;
+	}
+
 	public boolean isBlockOnWhitelist (String block_name) {
 		for (BlockEntry blockEntry : blockWhitelist) {
 			String name = blockEntry.getName();
@@ -82,7 +93,7 @@ public class JJConfig {
 		return false;
 	}
 
-	public static ConfigurationNode loadDefaultConfiguration() throws IOException {
+	private static ConfigurationNode loadDefaultConfiguration() throws IOException {
 		URL defaultConfig = JJConfig.class.getResource("default.conf");
 		if (defaultConfig == null) {
 			throw new Error("[JJPlacedBlockTracker] Default config is not present in jar.");

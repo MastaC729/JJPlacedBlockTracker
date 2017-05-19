@@ -45,7 +45,7 @@ public class BlockEntry {
 			String key = entry.getKey().getName();
 			Object value = entry.getValue();
 			// Continue to next cycle if a trait present on the state isn't present here.
-			if (!traits.containsKey(key)) {
+			if (traits == null || (traits != null && !traits.containsKey(key))) {
 				continue;
 			}
 			Object present = traits.get(key);

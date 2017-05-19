@@ -29,9 +29,9 @@ public class CommandBuilder {
 				.permission("jjplacedblocktracker.commands.getplacedblocks.self")
 				.arguments(GenericArguments.firstParsing(
 						GenericArguments.requiringPermission(
-								GenericArguments.string(Text.of("player")),"jjplacedblocktracker.commands.getplacedblocks.other"),
-						GenericArguments.string(Text.of("block_name"))),
-						GenericArguments.optional(GenericArguments.onlyOne(GenericArguments.string(Text.of("block_name")))))
+								GenericArguments.player(Text.of("player")),"jjplacedblocktracker.commands.getplacedblocks.other"),
+						new BlockNameCommandElement(Text.of("block_name"))),
+						GenericArguments.optional(GenericArguments.onlyOne(new BlockNameCommandElement(Text.of("block_name")))))
 				.executor(new GetPlacedBlocksCommand(logger, sqlManager))
 				.build(), "getplacedblocks", "getpb");
 
@@ -40,7 +40,7 @@ public class CommandBuilder {
 				.description(Text.of("Reports the number of all blocks you placed that are on the whitelist."))
 				.permission("jjplacedblocktracker.commands.getallplacedblocks.self")
 				.arguments(GenericArguments.optional(GenericArguments.requiringPermission(GenericArguments.onlyOne(
-						GenericArguments.string(Text.of("player"))),"jjplacedblocktracker.commands.getallplacedblocks.other")))
+						GenericArguments.player(Text.of("player"))),"jjplacedblocktracker.commands.getallplacedblocks.other")))
 				.executor(new GetAllPlacedBlocksCommand(logger, sqlManager))
 				.build(), "getallplacedblocks", "getapb");
 
@@ -49,11 +49,11 @@ public class CommandBuilder {
 				.description(Text.of("Reports the blocks placed before a specified timeframe"))
 				.permission("jjplacedblocktracker.commands.getplacedblocksage.self")
 				.arguments(GenericArguments.firstParsing(
-						GenericArguments.string(Text.of("player")),
-						GenericArguments.string(Text.of("block_name")),
+						GenericArguments.player(Text.of("player")),
+						new BlockNameCommandElement(Text.of("block_name")),
 						GenericArguments.string(Text.of("timeframe"))),
 						GenericArguments.optional(GenericArguments.firstParsing(
-								GenericArguments.string(Text.of("block_name")),
+								new BlockNameCommandElement(Text.of("block_name")),
 								GenericArguments.string(Text.of("timeframe")))),
 						GenericArguments.optional(GenericArguments.onlyOne(GenericArguments.string(Text.of("timeframe")))))
 				.executor(new GetPlacedBlocksAgeCommand(logger, sqlManager))

@@ -8,11 +8,13 @@ import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.slf4j.Logger;
 import org.spongepowered.api.Game;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.state.*;
 import org.spongepowered.api.plugin.Plugin;
+import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.service.permission.PermissionService;
 import org.spongepowered.api.service.permission.Subject;
 
@@ -20,12 +22,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
 
-@Plugin(id = "jjplacedblocktracker", name = "JJPlacedBlockTracker", version = "1.0.0")
+@Plugin(id = "jjplacedblocktracker", name = "JJPlacedBlockTracker", version = "1.1.1")
 public class JJPlacedBlockTracker {
 
 	@Inject
 	private Logger logger;
 	public static JJConfig config;
+	public static PluginContainer plugin;
 	public SQLManager sqlManager;
 	@Inject @ConfigDir(sharedRoot = false) private Path configDir;
 	@Inject @DefaultConfig(sharedRoot = false) private ConfigurationLoader<CommentedConfigurationNode> configLoader;
@@ -36,11 +39,13 @@ public class JJPlacedBlockTracker {
 
 	@Listener
 	public void preInit(GamePreInitializationEvent event) throws SQLException {
+		plugin = Sponge.getPluginManager().getPlugin("jjplacedblocktracker").get();
+		logger.info("UltimateChat Phynix version " + plugin.getVersion() + " is loading...");
 		try {
 			Files.createDirectories(configDir);
 			config = JJConfig.fromLoader(configLoader);
 		} catch (Exception e) {
-			logger.warn("Error loading default configuration!", e);
+			logger.warn("Error loading configuration!", e);
 		}
 
 		sqlManager = new SQLManager(logger, configDir);
@@ -84,7 +89,7 @@ public class JJPlacedBlockTracker {
 		CommandBuilder cBuilder = new CommandBuilder(this, logger, sqlManager);
 		cBuilder.buildCommands();
 
-		logger.info("JJPlacedBlockTracer has finished loading and has started.");
+		logger.info("JJPlacedBlockTracer version such and such has finished loading and has started.");	//TODO Change this to use PluginContainer, see UltimateChat
 	}
 
 	@Listener
