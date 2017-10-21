@@ -1,14 +1,16 @@
 package com.dedotatedwam.jjplacedblocktracker.storage;
 
 
+import com.dedotatedwam.jjplacedblocktracker.JJPlacedBlockTracker;
 import com.dedotatedwam.jjplacedblocktracker.Util;
-import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.service.sql.SqlService;
 
 import javax.sql.DataSource;
-import java.nio.file.Path;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -16,9 +18,6 @@ import java.util.UUID;
 
 public class SQLManager {
 
-	private Logger logger;
-
-	private Path configDir;
 	private SqlService sql;
 	private DataSource dataSource;
 
@@ -49,7 +48,7 @@ public class SQLManager {
 				}
 			}
 		} catch (Exception e) {
-			logger.error("Error getting player ID from database! ", e);
+			JJPlacedBlockTracker.getLogger().error("Error getting player ID from database! ", e);
 		}
 		return -1;
 	}
@@ -68,7 +67,7 @@ public class SQLManager {
 			stmt.setInt(7, z);
 			stmt.executeUpdate();
 		} catch (Exception e) {
-			logger.error("Error adding placed block entry to database! ", e);
+			JJPlacedBlockTracker.getLogger().error("Error adding placed block entry to database! ", e);
 		}
 	}
 
@@ -83,7 +82,7 @@ public class SQLManager {
 			stmt.setInt(4, z);
 			stmt.executeUpdate();
 		} catch (Exception e) {
-			logger.error("Error removing placed block from database! ", e);
+			JJPlacedBlockTracker.getLogger().error("Error removing placed block from database! ", e);
 		}
 	}
 
@@ -101,10 +100,10 @@ public class SQLManager {
 				return amt;
 			}
 		} catch (Exception e) {
-			logger.error("Error getting amount of placed blocks of name " + block_name +
+			JJPlacedBlockTracker.getLogger().error("Error getting amount of placed blocks of name " + block_name +
 					" from player " + player_UUID.toString() + "! ", e);
 		}
-		logger.debug("" + amt);
+		JJPlacedBlockTracker.getLogger().debug("" + amt);
 		return 0;
 	}
 
@@ -125,7 +124,7 @@ public class SQLManager {
 				}
 				return Optional.of(blocks);
 			} catch (Exception e) {
-				logger.error("Error getting amount of placed blocks from time " + timeCheck + "! ", e);
+				JJPlacedBlockTracker.getLogger().error("Error getting amount of placed blocks from time " + timeCheck + "! ", e);
 			}
 		}
 		return null;
@@ -150,7 +149,7 @@ public class SQLManager {
 				}
 				return Optional.of(blocks);
 			} catch (Exception e) {
-				logger.error("Error getting amount of placed blocks from time " + timeCheck + " and player " + player_UUID.toString() + "! ", e);
+				JJPlacedBlockTracker.getLogger().error("Error getting amount of placed blocks from time " + timeCheck + " and player " + player_UUID.toString() + "! ", e);
 			}
 		}
 		return null;
@@ -175,7 +174,7 @@ public class SQLManager {
 				}
 				return Optional.of(blocks);
 			} catch (Exception e) {
-				logger.error("Error getting amount of placed blocks from time " + timeCheck + " and block name " + block_name + "! ", e);
+				JJPlacedBlockTracker.getLogger().error("Error getting amount of placed blocks from time " + timeCheck + " and block name " + block_name + "! ", e);
 			}
 		}
 		return null;
@@ -201,7 +200,7 @@ public class SQLManager {
 				}
 				return Optional.of(blocks);
 			} catch (Exception e) {
-				logger.error("Error getting amount of placed blocks from time " + timeCheck + ", player "
+				JJPlacedBlockTracker.getLogger().error("Error getting amount of placed blocks from time " + timeCheck + ", player "
 						+ player_UUID.toString() + ", and block name " + block_name + "! ", e);
 			}
 		}
@@ -212,14 +211,12 @@ public class SQLManager {
 	// players: converts the player's UUID to a more lightweight int
 	// locations: stores each block placed within the whitelist
 	// NOTE: This should only need to be called once in the main class, then that instance should be used by everything else
-	public SQLManager(Logger logger, Path configDir) {
-		this.logger = logger;
-		this.configDir = configDir;
+	public SQLManager() {
 		try {
-			dataSource = getDataSource("jdbc:h2:" + configDir.toAbsolutePath()
+			dataSource = getDataSource("jdbc:h2:" + JJPlacedBlockTracker.getConfigDir().toAbsolutePath()
 					+ "/" + "jjdatabase");        //TODO Make this database name configurable
 		} catch (SQLException e) {
-			logger.error("Error while getting the data source! ", e);
+			JJPlacedBlockTracker.getLogger().error("Error while getting the data source! ", e);
 		}
 
 		try (Connection conn = dataSource.getConnection()) {
@@ -244,7 +241,7 @@ public class SQLManager {
 			stmt.executeUpdate();
 
 		} catch (Exception e) {
-			logger.error("Error while creating new database or reading from existing one! ", e);
+			JJPlacedBlockTracker.getLogger().error("Error while creating new database or reading from existing one! ", e);
 		}
 	}
 
@@ -258,7 +255,7 @@ public class SQLManager {
 				return UUID.fromString(rs.getString(1));
 			}
 		} catch (SQLException e) {
-			logger.error("Error getting player UUID from database! ", e);
+			JJPlacedBlockTracker.getLogger().error("Error getting player UUID from database! ", e);
 		}
 
 		return null;

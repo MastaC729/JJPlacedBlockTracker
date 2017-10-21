@@ -27,9 +27,10 @@ public class JJPlacedBlockTracker {
 
 	@Inject
 	private Logger logger;
+	private static JJPlacedBlockTracker instance;
 	public static JJConfig config;
-	public static PluginContainer plugin;
-	public SQLManager sqlManager;
+	private static PluginContainer plugin;
+	private SQLManager sqlManager;
 	@Inject @ConfigDir(sharedRoot = false) private Path configDir;
 	@Inject @DefaultConfig(sharedRoot = false) private ConfigurationLoader<CommentedConfigurationNode> configLoader;
 	@Inject Game game;
@@ -39,6 +40,7 @@ public class JJPlacedBlockTracker {
 
 	@Listener
 	public void preInit(GamePreInitializationEvent event) throws SQLException {
+		JJPlacedBlockTracker.instance = this;
 		plugin = Sponge.getPluginManager().getPlugin("jjplacedblocktracker").get();
 		logger.info("UltimateChat Phynix version " + plugin.getVersion() + " is loading...");
 		try {
@@ -48,7 +50,7 @@ public class JJPlacedBlockTracker {
 			logger.warn("Error loading configuration!", e);
 		}
 
-		sqlManager = new SQLManager(logger, configDir);
+		sqlManager = new SQLManager();
 
 		// Set custom options for block whitelist - handles max placed blocks
 		// JJPermissions.setOptionPermissions();
@@ -98,14 +100,12 @@ public class JJPlacedBlockTracker {
 	}
 
 	public static JJConfig getConfig() {
-		return config;
+		return JJPlacedBlockTracker.instance.config;
 	}
 
-	public Path getConfigDir() {
-		return configDir;
+	public static Path getConfigDir() {
+		return JJPlacedBlockTracker.instance.configDir;
 	}
 
-	public Logger getLogger() {
-		return logger;
-	}
+	public static Logger getLogger() { return JJPlacedBlockTracker.instance.logger; }
 }
